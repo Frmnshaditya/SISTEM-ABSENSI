@@ -1,0 +1,6 @@
+{
+  "name": "Sistem Absensi QR",
+  "description": "Sistem absensi siswa terintegrasi dengan pemindaian kode QR, statistik kehadiran waktu nyata (real-time demo), filter kelas, pengingat suara, serta ekspor laporan PDF dan Excel.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

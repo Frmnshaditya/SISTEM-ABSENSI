@@ -1,0 +1,241 @@
+{
+  "users": [
+    {
+      "id": "usr_1",
+      "nama": "Budi Utomo, S.Pd.",
+      "email": "guru@sekolah.sch.id",
+      "passwordHash": "password123",
+      "role": "guru"
+    }
+  ],
+  "siswa": [
+    {
+      "id": "sis_1",
+      "nama": "Ahmad Fauzi",
+      "kelas": "XII-IPA-1",
+      "nis": "10021",
+      "qrCodeData": "ABS-10021"
+    },
+    {
+      "id": "sis_2",
+      "nama": "Siti Aminah",
+      "kelas": "XII-IPA-1",
+      "nis": "10022",
+      "qrCodeData": "ABS-10022"
+    },
+    {
+      "id": "sis_3",
+      "nama": "Budi Santoso",
+      "kelas": "XII-IPA-2",
+      "nis": "10023",
+      "qrCodeData": "ABS-10023"
+    },
+    {
+      "id": "sis_4",
+      "nama": "Dewi Lestari",
+      "kelas": "XII-IPA-2",
+      "nis": "10024",
+      "qrCodeData": "ABS-10024"
+    },
+    {
+      "id": "sis_5",
+      "nama": "Rian Hidayat",
+      "kelas": "XI-IPS-1",
+      "nis": "10025",
+      "qrCodeData": "ABS-10025"
+    },
+    {
+      "id": "sis_6",
+      "nama": "Laney Wahyuni",
+      "kelas": "XI-IPS-1",
+      "nis": "10026",
+      "qrCodeData": "ABS-10026"
+    },
+    {
+      "id": "sis_7",
+      "nama": "Eko Prasetyo",
+      "kelas": "XI-IPS-2",
+      "nis": "10027",
+      "qrCodeData": "ABS-10027"
+    },
+    {
+      "id": "sis_8",
+      "nama": "Farida Utami",
+      "kelas": "XI-IPS-2",
+      "nis": "10028",
+      "qrCodeData": "ABS-10028"
+    },
+    {
+      "id": "sis_9",
+      "nama": "Guntur Wibowo",
+      "kelas": "X-MIPA-1",
+      "nis": "10029",
+      "qrCodeData": "ABS-10029"
+    },
+    {
+      "id": "sis_10",
+      "nama": "Hendra Wijaya",
+      "kelas": "X-MIPA-1",
+      "nis": "10030",
+      "qrCodeData": "ABS-10030"
+    },
+    {
+      "id": "sis_11",
+      "nama": "Indah Permata",
+      "kelas": "X-MIPA-2",
+      "nis": "10031",
+      "qrCodeData": "ABS-10031"
+    },
+    {
+      "id": "sis_12",
+      "nama": "Joko Susilo",
+      "kelas": "X-MIPA-2",
+      "nis": "10032",
+      "qrCodeData": "ABS-10032"
+    },
+    {
+      "id": "sis_13",
+      "nama": "Kartika Sari",
+      "kelas": "X-IPS-1",
+      "nis": "10033",
+      "qrCodeData": "ABS-10033"
+    },
+    {
+      "id": "sis_14",
+      "nama": "Lukman Hakim",
+      "kelas": "X-IPS-1",
+      "nis": "10034",
+      "qrCodeData": "ABS-10034"
+    },
+    {
+      "id": "sis_15",
+      "nama": "Megawati Putri",
+      "kelas": "X-IPS-2",
+      "nis": "10035",
+      "qrCodeData": "ABS-10035"
+    },
+    {
+      "id": "sis_1779543276755",
+      "nama": "Aditya Firmansah",
+      "kelas": "XII-IPA-1",
+      "nis": "1004",
+      "qrCodeData": "ABS-1004"
+    },
+    {
+      "id": "sis_1779544633908",
+      "nama": "KOCUN",
+      "kelas": "XI-IPS-2",
+      "nis": "10051",
+      "qrCodeData": "ABS-10051"
+    },
+    {
+      "id": "sis_1779546221243",
+      "nama": "ILHAM FATHIRRAHMAN",
+      "kelas": "XII-IPA-1",
+      "nis": "1020",
+      "qrCodeData": "ABS-1020"
+    }
+  ],
+  "absensi": [
+    {
+      "id": "abs_1",
+      "siswaId": "sis_1",
+      "tanggal": "2026-05-23",
+      "jam": "07:02:15",
+      "status": "Hadir"
+    },
+    {
+      "id": "abs_2",
+      "siswaId": "sis_2",
+      "tanggal": "2026-05-23",
+      "jam": "07:05:43",
+      "status": "Hadir"
+    },
+    {
+      "id": "abs_3",
+      "siswaId": "sis_5",
+      "tanggal": "2026-05-23",
+      "jam": "07:23:12",
+      "status": "Terlambat"
+    },
+    {
+      "id": "abs_4",
+      "siswaId": "sis_6",
+      "tanggal": "2026-05-23",
+      "jam": "07:35:00",
+      "status": "Terlambat"
+    },
+    {
+      "id": "abs_5",
+      "siswaId": "sis_9",
+      "tanggal": "2026-05-23",
+      "jam": "06:58:32",
+      "status": "Hadir"
+    },
+    {
+      "id": "abs_1779543118672",
+      "siswaId": "sis_14",
+      "tanggal": "2026-05-23",
+      "jam": "07:05:00",
+      "status": "Hadir"
+    },
+    {
+      "id": "abs_1779543133261",
+      "siswaId": "sis_13",
+      "tanggal": "2026-05-23",
+      "jam": "07:05:00",
+      "status": "Hadir"
+    },
+    {
+      "id": "abs_1779543136232",
+      "siswaId": "sis_10",
+      "tanggal": "2026-05-23",
+      "jam": "07:05:00",
+      "status": "Hadir"
+    },
+    {
+      "id": "abs_1779544464383",
+      "siswaId": "sis_1779543276755",
+      "tanggal": "2026-05-23",
+      "jam": "13:54:24",
+      "status": "Terlambat"
+    },
+    {
+      "id": "abs_1779544736900",
+      "siswaId": "sis_1779544633908",
+      "tanggal": "2026-05-23",
+      "jam": "13:58:56",
+      "status": "Terlambat"
+    },
+    {
+      "id": "abs_1779544962669",
+      "siswaId": "sis_15",
+      "tanggal": "2026-05-23",
+      "jam": "14:02:42",
+      "status": "Terlambat"
+    },
+    {
+      "id": "abs_1779546271544",
+      "siswaId": "sis_1779546221243",
+      "tanggal": "2026-05-23",
+      "jam": "14:24:31",
+      "status": "Terlambat"
+    }
+  ],
+  "pengaturan": {
+    "jamMasuk": "07:15",
+    "namaSekolah": "SMA IT CORDOVA 174"
+  },
+  "kelas": [
+    "X-IPS-1",
+    "X-IPS-2",
+    "X-MIPA-1",
+    "X-MIPA-2",
+    "XI-IPS-1",
+    "XI-IPS-2",
+    "XI-MIPA-1",
+    "XII-IPA-1",
+    "XII-IPA-2",
+    "XII-IPS-1"
+  ]
+}

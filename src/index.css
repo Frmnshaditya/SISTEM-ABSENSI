@@ -1,0 +1,170 @@
+@import "tailwindcss";
+
+@layer base {
+  /* Define some core base transition styles so toggling theme is smooth */
+  body, header, aside, main, div, section, p, span, h1, h2, h3, h4, h5, h6, input, select, button {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+
+  /* Root variables for theming support */
+  :root {
+    --bg-page: #020617;
+    --bg-card: #0f172a;
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --border-card: #1e293b;
+  }
+
+  :root.light {
+    --bg-page: #f8fafc;
+    --bg-card: #ffffff;
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --text-muted: #64748b;
+    --border-card: #cbd5e1;
+  }
+}
+
+/* Light mode overrides for existing Slate utility classes */
+:root.light,
+:root.light .min-h-screen,
+:root.light .bg-slate-950,
+:root.light #full-spinner {
+  background-color: #f1f5f9 !important;
+}
+
+:root.light .bg-slate-900,
+:root.light .bg-slate-900\/40,
+:root.light .bg-slate-900\/60,
+:root.light .bg-slate-900\/80,
+:root.light .bg-slate-950\/50,
+:root.light .bg-slate-950\/80,
+:root.light #login-dialog-card,
+:root.light header.bg-slate-950\/80,
+:root.light header {
+  background-color: #ffffff !important;
+}
+
+:root.light .bg-slate-950\/50,
+:root.light .bg-slate-950\/80,
+:root.light .bg-slate-850 {
+  background-color: #f8fafc !important;
+}
+
+:root.light .border-slate-800,
+:root.light .border-slate-800\/50,
+:root.light .border-slate-800\/80,
+:root.light .border-slate-850,
+:root.light .border-slate-700,
+:root.light .border-slate-750 {
+  border-color: #cbd5e1 !important;
+}
+
+/* Clean text colors in light mode */
+:root.light h1,
+:root.light h2,
+:root.light h3,
+:root.light h4,
+:root.light h5,
+:root.light h6,
+:root.light p,
+:root.light span,
+:root.light div,
+:root.light b,
+:root.light td,
+:root.light label,
+:root.light select {
+  color: #1a2333;
+}
+
+:root.light .text-white {
+  color: #0f172a !important;
+}
+
+:root.light .text-slate-100 {
+  color: #1a2333 !important;
+}
+
+:root.light .text-slate-200 {
+  color: #2e3c54 !important;
+}
+
+:root.light .text-slate-300 {
+  color: #475569 !important;
+}
+
+:root.light .text-slate-405,
+:root.light .text-slate-400 {
+  color: #5d6b82 !important;
+}
+
+:root.light .text-slate-500 {
+  color: #7a8a9e !important;
+}
+
+/* Ensure button labels inside green, indigo, purple, red elements are strictly white */
+:root.light button.bg-indigo-600 .text-white,
+:root.light button.bg-indigo-600 span,
+:root.light button.bg-indigo-600,
+:root.light button.bg-emerald-600,
+:root.light button.bg-emerald-600 .text-white,
+:root.light button.bg-rose-600,
+:root.light button.bg-rose-600 .text-white,
+:root.light .bg-indigo-600,
+:root.light .bg-indigo-600 span,
+:root.light .bg-indigo-500,
+:root.light .bg-emerald-500,
+:root.light .bg-emerald-600,
+:root.light .bg-rose-650,
+:root.light .bg-rose-500 {
+  color: #ffffff !important;
+}
+
+/* Dynamic element styling for forms & selections */
+:root.light input,
+:root.light select,
+:root.light textarea {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+:root.light input::placeholder {
+  color: #94a3b8 !important;
+}
+
+:root.light .shadow-inner {
+  box-shadow: none !important;
+}
+
+/* Bright mode override: button 'Masuk Dashboard Guru' becomes black with white text */
+:root.light button#btn-goto-login {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border-color: #000000 !important;
+}
+
+:root.light button#btn-goto-login:hover {
+  background-color: #18181b !important;
+  border-color: #18181b !important;
+}
+
+:root.light button#btn-goto-login,
+:root.light button#btn-goto-login * {
+  color: #ffffff !important;
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.animate-spin-slow {
+  animation: spin-slow 12s linear infinite;
+}
