@@ -18,6 +18,7 @@ export interface Absensi {
   jam: string;     // HH:MM:SS
   status: "Hadir" | "Terlambat";
   mapel?: string;   // Mata Pelajaran
+  sesi?: string;    // Sesi Mapel ("1" | "2" | "3" | "4")
 }
 
 export interface Mapel {
@@ -28,6 +29,18 @@ export interface Mapel {
 export interface Settings {
   jamMasuk: string;
   namaSekolah: string;
+  mapel1_judul?: string;
+  mapel1_mulai?: string;
+  mapel1_jam?: string;
+  mapel2_judul?: string;
+  mapel2_mulai?: string;
+  mapel2_jam?: string;
+  mapel3_judul?: string;
+  mapel3_mulai?: string;
+  mapel3_jam?: string;
+  mapel4_judul?: string;
+  mapel4_mulai?: string;
+  mapel4_jam?: string;
 }
 
 export interface AttendanceStats {

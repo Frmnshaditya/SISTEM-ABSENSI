@@ -4,6 +4,7 @@ import { playSuccessSound, playWarningSound, playErrorSound } from "../utils/aud
 import Logo from "./Logo";
 import * as XLSX from "xlsx";
 import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
 import {
   Users,
   CheckCircle,
@@ -74,7 +75,36 @@ export default function TeacherDashboard({
   // Settings Local states
   const [localSchoolName, setLocalSchoolName] = useState(settings.namaSekolah);
   const [localJamMasuk, setLocalJamMasuk] = useState(settings.jamMasuk);
+  const [localMapel1Judul, setLocalMapel1Judul] = useState(settings.mapel1_judul || "Mapel Pertama");
+  const [localMapel1Mulai, setLocalMapel1Mulai] = useState(settings.mapel1_mulai || "06:00");
+  const [localMapel1Jam, setLocalMapel1Jam] = useState(settings.mapel1_jam || "07:15");
+  const [localMapel2Judul, setLocalMapel2Judul] = useState(settings.mapel2_judul || "Mapel Kedua");
+  const [localMapel2Mulai, setLocalMapel2Mulai] = useState(settings.mapel2_mulai || "08:30");
+  const [localMapel2Jam, setLocalMapel2Jam] = useState(settings.mapel2_jam || "10:15");
+  const [localMapel3Judul, setLocalMapel3Judul] = useState(settings.mapel3_judul || "Mapel Ketiga");
+  const [localMapel3Mulai, setLocalMapel3Mulai] = useState(settings.mapel3_mulai || "11:30");
+  const [localMapel3Jam, setLocalMapel3Jam] = useState(settings.mapel3_jam || "13:15");
+  const [localMapel4Judul, setLocalMapel4Judul] = useState(settings.mapel4_judul || "Mapel Keempat");
+  const [localMapel4Mulai, setLocalMapel4Mulai] = useState(settings.mapel4_mulai || "13:45");
+  const [localMapel4Jam, setLocalMapel4Jam] = useState(settings.mapel4_jam || "14:10");
   const [settingsSuccess, setSettingsSuccess] = useState(false);
+
+  useEffect(() => {
+    setLocalSchoolName(settings.namaSekolah);
+    setLocalJamMasuk(settings.jamMasuk);
+    setLocalMapel1Judul(settings.mapel1_judul || "Mapel Pertama");
+    setLocalMapel1Mulai(settings.mapel1_mulai || "06:00");
+    setLocalMapel1Jam(settings.mapel1_jam || "07:15");
+    setLocalMapel2Judul(settings.mapel2_judul || "Mapel Kedua");
+    setLocalMapel2Mulai(settings.mapel2_mulai || "08:30");
+    setLocalMapel2Jam(settings.mapel2_jam || "10:15");
+    setLocalMapel3Judul(settings.mapel3_judul || "Mapel Ketiga");
+    setLocalMapel3Mulai(settings.mapel3_mulai || "11:30");
+    setLocalMapel3Jam(settings.mapel3_jam || "13:15");
+    setLocalMapel4Judul(settings.mapel4_judul || "Mapel Keempat");
+    setLocalMapel4Mulai(settings.mapel4_mulai || "13:45");
+    setLocalMapel4Jam(settings.mapel4_jam || "14:10");
+  }, [settings]);
 
   // General loading states
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -83,6 +113,7 @@ export default function TeacherDashboard({
   const [simulatorStudentId, setSimulatorStudentId] = useState<string>("");
   const [simulatorTime, setSimulatorTime] = useState<string>("07:05");
   const [simulatorMapel, setSimulatorMapel] = useState(() => mapelList[0]?.nama || "Matematika");
+  const [simulatorSesi, setSimulatorSesi] = useState<string>("");
   const [simulationResponse, setSimulationResponse] = useState<{
     success: boolean;
     message: string;
@@ -444,6 +475,18 @@ export default function TeacherDashboard({
         body: JSON.stringify({
           jamMasuk: localJamMasuk,
           namaSekolah: localSchoolName,
+          mapel1_judul: localMapel1Judul,
+          mapel1_mulai: localMapel1Mulai,
+          mapel1_jam: localMapel1Jam,
+          mapel2_judul: localMapel2Judul,
+          mapel2_mulai: localMapel2Mulai,
+          mapel2_jam: localMapel2Jam,
+          mapel3_judul: localMapel3Judul,
+          mapel3_mulai: localMapel3Mulai,
+          mapel3_jam: localMapel3Jam,
+          mapel4_judul: localMapel4Judul,
+          mapel4_mulai: localMapel4Mulai,
+          mapel4_jam: localMapel4Jam,
         }),
       });
 
@@ -493,6 +536,44 @@ export default function TeacherDashboard({
       }
     } catch (e) {
       alert("Gagal mengosongkan log.");
+    }
+  };
+
+  // Dynamic high-res download for the entire Student ID Card layout (including metadata)
+  const handleDownloadCard = async () => {
+    const cardElement = document.getElementById("student-id-card-print-area");
+    if (!cardElement) return;
+    try {
+      const canvas = await html2canvas(cardElement, {
+        useCORS: true,
+        allowTaint: true,
+        scale: 3, // scale up by 3x for ultra high resolution
+        backgroundColor: null,
+        onclone: (clonedDoc) => {
+          // Clean all style tags containing oklch color functions to prevent html2canvas parsing errors
+          clonedDoc.querySelectorAll("style").forEach((styleEl) => {
+            if (styleEl.textContent && styleEl.textContent.includes("oklch")) {
+              styleEl.textContent = styleEl.textContent.replace(/oklch\([^)]+\)/g, "rgba(0, 0, 0, 0.1)");
+            }
+          });
+
+          // Clean all elements' inline styles containing oklch
+          clonedDoc.querySelectorAll("*").forEach((el: any) => {
+            const styleAttr = el.getAttribute("style");
+            if (styleAttr && styleAttr.includes("oklch")) {
+              el.setAttribute("style", styleAttr.replace(/oklch\([^)]+\)/g, "rgba(0, 0, 0, 0.1)"));
+            }
+          });
+        }
+      });
+      const dataUrl = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.download = `Kartu_Identitas_Siswa_${activeQrModal?.nama?.replace(/\s+/g, "_") || "Siswa"}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (error) {
+      console.error("Gagal mengunduh kartu siswa:", error);
+      alert("Terjadi kesalahan saat mengunduh gambar kartu.");
     }
   };
 
@@ -681,6 +762,7 @@ export default function TeacherDashboard({
           qrData: s.qrCodeData,
           forcedTime: `${simulatorTime}:00`,
           mapel: simulatorMapel,
+          sesi: simulatorSesi || undefined,
         }),
       });
 
@@ -1046,7 +1128,7 @@ export default function TeacherDashboard({
 
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end mt-4">
                   {/* Select Student dropdown */}
-                  <div className="md:col-span-4 space-y-1.5">
+                  <div className="md:col-span-3 space-y-1.5">
                     <label className="text-[10px] uppercase font-mono text-slate-400 font-medium">Pilih Siswa</label>
                     <select
                       value={simulatorStudentId}
@@ -1082,23 +1164,39 @@ export default function TeacherDashboard({
                     </select>
                   </div>
 
+                  {/* Select Sesi dropdown */}
+                  <div className="md:col-span-2 space-y-1.5">
+                    <label className="text-[10px] uppercase font-mono text-slate-400 font-medium">Sesi Pelajaran</label>
+                    <select
+                      value={simulatorSesi}
+                      onChange={(e) => setSimulatorSesi(e.target.value)}
+                      className="w-full bg-slate-950 text-white rounded-xl py-2 px-3 border border-slate-800 text-xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition font-medium"
+                    >
+                      <option value="">Auto (Ikut Jam)</option>
+                      <option value="1">Sesi 1 ({settings.mapel1_judul || "Pertama"})</option>
+                      <option value="2">Sesi 2 ({settings.mapel2_judul || "Kedua"})</option>
+                      <option value="3">Sesi 3 ({settings.mapel3_judul || "Ketiga"})</option>
+                      <option value="4">Sesi 4 ({settings.mapel4_judul || "Keempat"})</option>
+                    </select>
+                  </div>
+
                   {/* Force Custom Time input */}
                   <div className="md:col-span-2 space-y-1.5">
-                    <label className="text-[10px] uppercase font-mono text-slate-400 font-medium">Jam Masuk</label>
+                    <label className="text-[10px] uppercase font-mono text-slate-400 font-medium font-bold text-indigo-400">Jam Masuk</label>
                     <input
                       type="time"
                       value={simulatorTime}
                       onChange={(e) => setSimulatorTime(e.target.value)}
-                      className="w-full bg-slate-950 text-white rounded-xl py-1.5 px-3 border border-slate-800 text-xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition"
+                      className="w-full bg-slate-950 text-white rounded-xl py-1.5 px-3 border border-slate-800 text-xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition font-semibold font-mono"
                     />
                   </div>
 
                   {/* Submit dispatch button */}
                   <button
                     onClick={handleRunSimulation}
-                    className="md:col-span-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs uppercase font-bold tracking-wider py-2.5 px-4 rounded-xl transition-all duration-155 flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-indigo-600/15"
+                    className="md:col-span-2 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] uppercase font-bold tracking-wider py-2.5 px-3 rounded-xl transition-all duration-155 flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-indigo-600/15 h-[34px] mb-[1px]"
                   >
-                    Simulasikan Scan </button>
+                    Simulasikan </button>
                 </div>
 
                 {simulationResponse && (
@@ -1643,76 +1741,155 @@ export default function TeacherDashboard({
                       </span>
                     </div>
                   </div>
-                </div>
-
-                {/* Ledger Listing Table */}
-                <div className="overflow-x-auto w-full">
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead>
-                      <tr className="border-b border-slate-800 text-slate-500 uppercase font-mono tracking-wider pb-2.5">
-                        <th className="pb-3">No</th>
-                        <th className="pb-3">Nama Siswa</th>
-                        <th className="pb-3">NIS</th>
-                        <th className="pb-3">Kelas</th>
-                        <th className="pb-3">Pelajaran</th>
-                        <th className="pb-3 font-mono">Simulasi Tanggal</th>
-                        <th className="pb-3 font-mono">Waktu Absen</th>
-                        <th className="pb-3">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-850">
-                      {absensiList.filter((log) => {
-                        const student = siswaList.find((s) => s.id === log.siswaId);
-                        if (!student) return false;
-                        const matchesSearch = student.nama.toLowerCase().includes(searchQuery.toLowerCase()) || student.nis.includes(searchQuery);
-                        const matchesClass = classFilter === "Semua Kelas" || student.kelas === classFilter;
-                        const matchesMapel = mapelFilter === "Semua Mapel" || (log.mapel || "Matematika") === mapelFilter;
-                        return matchesSearch && matchesClass && matchesMapel;
-                      }).length === 0 ? (
-                        <tr>
-                          <td colSpan={8} className="py-12 text-center text-slate-600">
-                            Belum ada entri absensi terekam yang cocok untuk log aktif.
-                          </td>
-                        </tr>
-                      ) : (
-                        absensiList
-                          .filter((log) => {
-                            const student = siswaList.find((s) => s.id === log.siswaId);
-                            if (!student) return false;
-                            const matchesSearch = student.nama.toLowerCase().includes(searchQuery.toLowerCase()) || student.nis.includes(searchQuery);
-                            const matchesClass = classFilter === "Semua Kelas" || student.kelas === classFilter;
-                            const matchesMapel = mapelFilter === "Semua Mapel" || (log.mapel || "Matematika") === mapelFilter;
-                            return matchesSearch && matchesClass && matchesMapel;
-                          })
-                          .map((log, idx) => {
-                            const student = siswaList.find((s) => s.id === log.siswaId);
-                            return (
-                              <tr key={log.id} className="hover:bg-slate-900/35 transition">
-                                <td className="py-3 font-mono text-slate-500">{idx + 1}</td>
-                                <td className="py-3 text-white font-bold">{student ? student.nama : "Tidak Dikenal"}</td>
-                                <td className="py-3 font-mono text-slate-300">{student ? student.nis : "-"}</td>
-                                <td className="py-3 font-mono">{student ? student.kelas : "-"}</td>
-                                <td className="py-3 text-slate-300 font-semibold">{log.mapel || "Matematika"}</td>
-                                <td className="py-3 font-mono text-slate-400">{log.tanggal}</td>
-                                <td className="py-3 font-mono text-emerald-400 font-semibold">{log.jam} WIB</td>
-                                <td className="py-3">
-                                  <span className={`px-2 py-0.5 rounded-md font-extrabold text-[10px] ${
-                                    log.status === "Hadir"
-                                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                      : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                                  }`}>
-                                    {log.status.toUpperCase()}
-                                  </span>
-                                </td>
-                              </tr>
-                            );
-                          })
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-
               </div>
+
+              {/* Daily Separated Reports */}
+              {(() => {
+                const filtered = absensiList.filter((log) => {
+                  const student = siswaList.find((s) => s.id === log.siswaId);
+                  if (!student) return false;
+                  const matchesSearch = student.nama.toLowerCase().includes(searchQuery.toLowerCase()) || student.nis.includes(searchQuery);
+                  const matchesClass = classFilter === "Semua Kelas" || student.kelas === classFilter;
+                  const matchesMapel = mapelFilter === "Semua Mapel" || (log.mapel || "Matematika") === mapelFilter;
+                  return matchesSearch && matchesClass && matchesMapel;
+                });
+
+                // Group by Date
+                const groups: { [key: string]: typeof filtered } = {};
+                filtered.forEach((log) => {
+                  const date = log.tanggal;
+                  if (!groups[date]) {
+                    groups[date] = [];
+                  }
+                  groups[date].push(log);
+                });
+
+                // Sort dates descending
+                const sortedDates = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+
+                const formatTanggalIndo = (tanggalStr: string) => {
+                  try {
+                    const [year, month, day] = tanggalStr.split("-").map(Number);
+                    if (year && month && day) {
+                      const d = new Date(year, month - 1, day);
+                      return d.toLocaleDateString("id-ID", {
+                        weekday: "long",
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric"
+                      });
+                    }
+                  } catch (e) {}
+                  return tanggalStr;
+                };
+
+                if (sortedDates.length === 0) {
+                  return (
+                    <div className="text-center py-12 bg-slate-950/20 border border-slate-800/60 rounded-2xl text-slate-500 font-medium">
+                      Belum ada entri absensi terekam yang cocok untuk saringan aktif.
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="space-y-6">
+                    {sortedDates.map((date) => {
+                      const logsForDate = groups[date];
+                      const statsInfo = logsForDate.reduce(
+                        (acc, curr) => {
+                          if (curr.status === "Hadir") acc.hadir++;
+                          else acc.terlambat++;
+                          return acc;
+                        },
+                        { hadir: 0, terlambat: 0 }
+                      );
+
+                      return (
+                        <div key={date} className="bg-slate-900/30 border border-slate-800/80 p-5 rounded-2xl space-y-4 shadow-sm">
+                          {/* Date Group Heading */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/60 pb-3">
+                            <div className="flex items-center gap-2">
+                              <span className="p-1.5 bg-indigo-500/10 text-indigo-400 rounded-lg border border-indigo-500/25">
+                                <Clock className="h-4 w-4" />
+                              </span>
+                              <h3 className="text-sm font-bold text-slate-200">
+                                {formatTanggalIndo(date)}
+                              </h3>
+                            </div>
+                            
+                            <div className="flex items-center gap-2 text-[10px] uppercase font-mono font-bold">
+                              <span className="px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                {statsInfo.hadir} Hadir
+                              </span>
+                              <span className="px-2 py-1 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                {statsInfo.terlambat} Terlambat
+                              </span>
+                              <span className="px-2 py-1 rounded bg-slate-800 text-slate-350 border border-slate-700">
+                                Total: {logsForDate.length} Siswa
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Table for this date */}
+                          <div className="overflow-x-auto w-full">
+                            <table className="w-full text-left text-xs border-collapse">
+                              <thead>
+                                <tr className="border-b border-slate-800/60 text-slate-500 uppercase font-mono tracking-wider pb-2.5">
+                                  <th className="pb-2 text-[10px] w-12">No</th>
+                                  <th className="pb-2 text-[10px]">Nama Siswa</th>
+                                  <th className="pb-2 text-[10px]">NIS</th>
+                                  <th className="pb-2 text-[10px]">Kelas</th>
+                                  <th className="pb-2 text-[10px]">Sesi / Pelajaran</th>
+                                  <th className="pb-2 text-[10px] font-mono">Waktu Absen</th>
+                                  <th className="pb-2 text-[10px]">Status</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-850/60">
+                                {logsForDate.map((log, index) => {
+                                  const student = siswaList.find((s) => s.id === log.siswaId);
+                                  
+                                  let detailedSesi = log.mapel || "Matematika";
+                                  if (log.sesi === "1") {
+                                    detailedSesi = `${settings.mapel1_judul || "Sesi 1"} (${detailedSesi})`;
+                                  } else if (log.sesi === "2") {
+                                    detailedSesi = `${settings.mapel2_judul || "Sesi 2"} (${detailedSesi})`;
+                                  } else if (log.sesi === "3") {
+                                    detailedSesi = `${settings.mapel3_judul || "Sesi 3"} (${detailedSesi})`;
+                                  } else if (log.sesi === "4") {
+                                    detailedSesi = `${settings.mapel4_judul || "Sesi 4"} (${detailedSesi})`;
+                                  }
+
+                                  return (
+                                    <tr key={log.id} className="hover:bg-slate-900/25 transition">
+                                      <td className="py-2.5 font-mono text-slate-500">{index + 1}</td>
+                                      <td className="py-2.5 text-white font-bold">{student ? student.nama : "Tidak Dikenal"}</td>
+                                      <td className="py-2.5 font-mono text-slate-300">{student ? student.nis : "-"}</td>
+                                      <td className="py-2.5 font-mono">{student ? student.kelas : "-"}</td>
+                                      <td className="py-2.5 text-slate-200 font-semibold">{detailedSesi}</td>
+                                      <td className="py-2.5 font-mono text-emerald-400 font-semibold">{log.jam} WIB</td>
+                                      <td className="py-2.5">
+                                        <span className={`px-2 py-0.5 rounded-md font-extrabold text-[10px] ${
+                                          log.status === "Hadir"
+                                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                            : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                                        }`}>
+                                          {log.status.toUpperCase()}
+                                        </span>
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+
+            </div>
 
             </div>
           )}
@@ -1752,7 +1929,7 @@ export default function TeacherDashboard({
 
                   {/* Timeout Limit */}
                   <div className="space-y-2">
-                    <label className="text-slate-300 block font-bold text-xs uppercase tracking-wider">Batas Waktu Masuk Tepat (Deadline)</label>
+                    <label className="text-slate-300 block font-bold text-xs uppercase tracking-wider">Batas Waktu Masuk Tepat (Deadline Umum)</label>
                     <input
                       type="time"
                       value={localJamMasuk}
@@ -1760,8 +1937,150 @@ export default function TeacherDashboard({
                       className="w-full sm:max-w-xs bg-slate-950 text-white rounded-xl py-2.5 px-4 border border-slate-800 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition font-medium"
                     />
                     <p className="text-[10px] text-slate-500 leading-relaxed font-mono">
-                      Siswa yang memindai QR code sebelum jam ini terhitung sebagai <b className="text-emerald-450">Hadir</b>. Pemindaian setelah jam ini otomatis akan tercantum <b className="text-amber-450">Terlambat</b>.
+                      Sesuai prosedur umum default penandaan tepat waktu sekolah jika tidak memakai filter mapel per sesi di bawah.
                     </p>
+                  </div>
+
+                  {/* Sesi Pelajaran & Batas Kehadiran (4 Mapel) */}
+                  <div className="space-y-4 pt-4 border-t border-slate-800/80">
+                    <div className="flex items-center gap-2">
+                      <BookOpen className="h-4 w-4 text-indigo-400" />
+                      <h5 className="text-[11px] uppercase font-mono text-indigo-400 font-bold tracking-wider">
+                        Sesi & Batas Waktu per Pelajaran (Maksimal 4 Mapel per Hari)
+                      </h5>
+                    </div>
+                    
+                    <p className="text-[11px] text-slate-400 leading-relaxed">
+                      Siswa dapat memindai kartu QR mereka hingga 4x sehari (sekali per pelajaran). Sistem akan mencatat kehadiran tepat waktu siswa secara independen berdasarkan toleransi waktu masing-masing sesi pelajaran berikut.
+                    </p>                     <div className="grid grid-cols-1 gap-3.5">
+                      {/* Sesi 1 */}
+                      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center bg-slate-950/80 p-3.5 rounded-xl border border-slate-800/80 shadow-inner">
+                        <span className="text-[11px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/35 w-6 h-6 rounded-full flex items-center justify-center font-bold">1</span>
+                        <div className="flex-1 w-full space-y-1">
+                          <label className="text-[10px] text-slate-400 block uppercase font-bold tracking-wide">Judul Sesi/Mapel Pertama</label>
+                          <input
+                            type="text"
+                            value={localMapel1Judul}
+                            onChange={(e) => setLocalMapel1Judul(e.target.value)}
+                            className="w-full bg-slate-900 border border-slate-800 text-white rounded-lg px-3 py-1.5 text-xs outline-none focus:border-indigo-500 font-medium transition"
+                          />
+                        </div>
+                        <div className="w-full sm:w-28 space-y-1">
+                          <label className="text-[10px] text-slate-400 block uppercase font-bold tracking-wide">Mulai Absen</label>
+                          <input
+                            type="time"
+                            value={localMapel1Mulai}
+                            onChange={(e) => setLocalMapel1Mulai(e.target.value)}
+                            className="w-full bg-slate-900 border border-slate-800 text-white rounded-lg px-3 py-1.5 text-xs outline-none focus:border-indigo-500 font-mono transition"
+                          />
+                        </div>
+                        <div className="w-full sm:w-28 space-y-1">
+                          <label className="text-[10px] text-slate-400 block uppercase font-bold tracking-wide">Batas Waktu</label>
+                          <input
+                            type="time"
+                            value={localMapel1Jam}
+                            onChange={(e) => setLocalMapel1Jam(e.target.value)}
+                            className="w-full bg-slate-900 border border-slate-800 text-white rounded-lg px-3 py-1.5 text-xs outline-none focus:border-indigo-500 font-mono transition"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Sesi 2 */}
+                      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center bg-slate-950/80 p-3.5 rounded-xl border border-slate-800/80 shadow-inner">
+                        <span className="text-[11px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/35 w-6 h-6 rounded-full flex items-center justify-center font-bold">2</span>
+                        <div className="flex-1 w-full space-y-1">
+                          <label className="text-[10px] text-slate-400 block uppercase font-bold tracking-wide">Judul Sesi/Mapel Kedua</label>
+                          <input
+                            type="text"
+                            value={localMapel2Judul}
+                            onChange={(e) => setLocalMapel2Judul(e.target.value)}
+                            className="w-full bg-slate-900 border border-slate-800 text-white rounded-lg px-3 py-1.5 text-xs outline-none focus:border-indigo-500 font-medium transition"
+                          />
+                        </div>
+                        <div className="w-full sm:w-28 space-y-1">
+                          <label className="text-[10px] text-slate-400 block uppercase font-bold tracking-wide">Mulai Absen</label>
+                          <input
+                            type="time"
+                            value={localMapel2Mulai}
+                            onChange={(e) => setLocalMapel2Mulai(e.target.value)}
+                            className="w-full bg-slate-900 border border-slate-800 text-white rounded-lg px-3 py-1.5 text-xs outline-none focus:border-indigo-500 font-mono transition"
+                          />
+                        </div>
+                        <div className="w-full sm:w-28 space-y-1">
+                          <label className="text-[10px] text-slate-400 block uppercase font-bold tracking-wide">Batas Waktu</label>
+                          <input
+                            type="time"
+                            value={localMapel2Jam}
+                            onChange={(e) => setLocalMapel2Jam(e.target.value)}
+                            className="w-full bg-slate-900 border border-slate-800 text-white rounded-lg px-3 py-1.5 text-xs outline-none focus:border-indigo-500 font-mono transition"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Sesi 3 */}
+                      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center bg-slate-950/80 p-3.5 rounded-xl border border-slate-800/80 shadow-inner">
+                        <span className="text-[11px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/35 w-6 h-6 rounded-full flex items-center justify-center font-bold">3</span>
+                        <div className="flex-1 w-full space-y-1">
+                          <label className="text-[10px] text-slate-400 block uppercase font-bold tracking-wide">Judul Sesi/Mapel Ketiga</label>
+                          <input
+                            type="text"
+                            value={localMapel3Judul}
+                            onChange={(e) => setLocalMapel3Judul(e.target.value)}
+                            className="w-full bg-slate-900 border border-slate-800 text-white rounded-lg px-3 py-1.5 text-xs outline-none focus:border-indigo-500 font-medium transition"
+                          />
+                        </div>
+                        <div className="w-full sm:w-28 space-y-1">
+                          <label className="text-[10px] text-slate-400 block uppercase font-bold tracking-wide">Mulai Absen</label>
+                          <input
+                            type="time"
+                            value={localMapel3Mulai}
+                            onChange={(e) => setLocalMapel3Mulai(e.target.value)}
+                            className="w-full bg-slate-900 border border-slate-800 text-white rounded-lg px-3 py-1.5 text-xs outline-none focus:border-indigo-500 font-mono transition"
+                          />
+                        </div>
+                        <div className="w-full sm:w-28 space-y-1">
+                          <label className="text-[10px] text-slate-400 block uppercase font-bold tracking-wide">Batas Waktu</label>
+                          <input
+                            type="time"
+                            value={localMapel3Jam}
+                            onChange={(e) => setLocalMapel3Jam(e.target.value)}
+                            className="w-full bg-slate-900 border border-slate-800 text-white rounded-lg px-3 py-1.5 text-xs outline-none focus:border-indigo-500 font-mono transition"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Sesi 4 */}
+                      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center bg-slate-950/80 p-3.5 rounded-xl border border-slate-800/80 shadow-inner">
+                        <span className="text-[11px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/35 w-6 h-6 rounded-full flex items-center justify-center font-bold">4</span>
+                        <div className="flex-1 w-full space-y-1">
+                          <label className="text-[10px] text-slate-400 block uppercase font-bold tracking-wide">Judul Sesi/Mapel Keempat</label>
+                          <input
+                            type="text"
+                            value={localMapel4Judul}
+                            onChange={(e) => setLocalMapel4Judul(e.target.value)}
+                            className="w-full bg-slate-900 border border-slate-800 text-white rounded-lg px-3 py-1.5 text-xs outline-none focus:border-indigo-500 font-medium transition"
+                          />
+                        </div>
+                        <div className="w-full sm:w-28 space-y-1">
+                          <label className="text-[10px] text-slate-400 block uppercase font-bold tracking-wide">Mulai Absen</label>
+                          <input
+                            type="time"
+                            value={localMapel4Mulai}
+                            onChange={(e) => setLocalMapel4Mulai(e.target.value)}
+                            className="w-full bg-slate-900 border border-slate-800 text-white rounded-lg px-3 py-1.5 text-xs outline-none focus:border-indigo-500 font-mono transition"
+                          />
+                        </div>
+                        <div className="w-full sm:w-28 space-y-1">
+                          <label className="text-[10px] text-slate-400 block uppercase font-bold tracking-wide">Batas Waktu</label>
+                          <input
+                            type="time"
+                            value={localMapel4Jam}
+                            onChange={(e) => setLocalMapel4Jam(e.target.value)}
+                            className="w-full bg-slate-900 border border-slate-800 text-white rounded-lg px-3 py-1.5 text-xs outline-none focus:border-indigo-500 font-mono transition"
+                          />
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   <button
@@ -1824,35 +2143,130 @@ export default function TeacherDashboard({
             {/* Simulated School ID Card Graphic wrapper */}
             <div
               id="student-id-card-print-area"
-              className="w-full bg-slate-950 border border-slate-800 p-5 rounded-2xl flex flex-col items-center justify-center text-center space-y-4 relative shadow-inner shadow-black"
+              className="w-full p-5 rounded-2xl flex flex-col items-center justify-center text-center space-y-4 relative shadow-2xl overflow-hidden"
+              style={{
+                background: "linear-gradient(135deg, #022c22, #020617, #022c22)",
+                border: "1px solid rgba(16, 185, 129, 0.3)",
+              }}
             >
-              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-t-2xl" />
-
-              <div className="space-y-0.5">
-                <span className="text-[10px] text-slate-500 uppercase tracking-widest font-mono">KARTU ABSENSI RESMI</span>
-                <h5 className="text-white text-xs font-bold leading-tight">{settings.namaSekolah}</h5>
+              {/* Gold Ornamental Header Accent */}
+              <div 
+                className="absolute top-0 inset-x-0 h-1.5" 
+                style={{ background: "linear-gradient(to right, #d97706, #fbbf24, #d97706)" }}
+              />
+              
+              {/* Subtle Islamic Geometric Backdrop Watermark / Accents */}
+              <div 
+                className="absolute top-2 right-2 pointer-events-none select-none font-sans text-[42px] leading-none"
+                style={{ color: "rgba(16, 185, 129, 0.08)" }}
+              >
+                ۞
+              </div>
+              <div 
+                className="absolute bottom-2 left-2 pointer-events-none select-none font-sans text-[42px] leading-none"
+                style={{ color: "rgba(16, 185, 129, 0.08)" }}
+              >
+                ۞
               </div>
 
-              {/* Server-Side Rendered QR code stream direct pipe */}
-              <div className="h-44 w-44 bg-white p-2.5 rounded-xl flex items-center justify-center shadow-lg border-2 border-indigo-500/10">
-                <img
-                  src={`/api/siswa/${activeQrModal.id}/qr`}
-                  alt={`QR Code ${activeQrModal.nama}`}
-                  referrerPolicy="no-referrer"
-                  className="h-full w-full object-contain"
-                />
+              {/* Boarding School Header */}
+              <div 
+                className="space-y-2 w-full pb-3"
+                style={{ borderBottom: "1px dashed rgba(245, 158, 11, 0.2)" }}
+              >
+                <div className="flex items-center justify-center gap-1.5">
+                  <div 
+                    className="h-6 w-6 rounded-full flex items-center justify-center shadow-md"
+                    style={{ background: "linear-gradient(135deg, #fbbf24, #d97706)", color: "#022c22" }}
+                  >
+                    <BookOpen className="h-3 w-3 font-extrabold" />
+                  </div>
+                  <span 
+                    className="text-[9px] uppercase tracking-widest font-sans font-bold"
+                    style={{ color: "#fbbf24" }}
+                  >
+                    KARTU IDENTITAS SISWA
+                  </span>
+                </div>
+                
+                <div className="space-y-0.5">
+                  <h5 className="text-white text-xs font-bold leading-tight tracking-wide font-sans">{settings.namaSekolah}</h5>
+                  <span 
+                    className="text-[8px] uppercase tracking-widest font-sans font-medium block"
+                    style={{ color: "#94a3b8" }}
+                  >
+                    Sistem Akademik & Kesiswaan
+                  </span>
+                </div>
               </div>
 
-              <div className="space-y-1">
-                <span className="text-white font-extrabold text-base block">{activeQrModal.nama}</span>
-                <span className="bg-indigo-500/10 border border-indigo-500/20 text-[10px] px-2.5 py-0.5 rounded-full font-mono text-indigo-400 font-bold">
-                  {activeQrModal.kelas}
+              {/* Server-Side Rendered QR code stream with premium Gold Frame */}
+              <div className="relative p-1">
+                {/* Vintage Corner Brackets Simulation for QR Code */}
+                <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 rounded-tl" style={{ borderColor: "#fbbf24" }} />
+                <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 rounded-tr" style={{ borderColor: "#fbbf24" }} />
+                <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 rounded-bl" style={{ borderColor: "#fbbf24" }} />
+                <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 rounded-br" style={{ borderColor: "#fbbf24" }} />
+                
+                <div 
+                  className="h-44 w-44 bg-white p-3 rounded-lg flex items-center justify-center shadow-xl border"
+                  style={{ borderColor: "rgba(251, 191, 36, 0.15)" }}
+                >
+                  <img
+                    src={`/api/siswa/${activeQrModal.id}/qr`}
+                    alt={`QR Code ${activeQrModal.nama}`}
+                    referrerPolicy="no-referrer"
+                    className="h-full w-full object-contain"
+                  />
+                </div>
+              </div>
+
+              {/* Student Bio */}
+              <div className="space-y-1.5 w-full">
+                <span className="text-white font-black text-base block tracking-tight leading-snug drop-shadow-sm">
+                  {activeQrModal.nama}
                 </span>
-                <span className="text-[10px] text-slate-500 block font-mono mt-1">NIS ID: {activeQrModal.nis}</span>
+
+                <div className="flex items-center justify-center gap-2">
+                  <span 
+                    className="text-[9px] px-2.5 py-0.5 rounded-md font-sans font-bold uppercase tracking-wide border"
+                    style={{
+                      backgroundColor: "rgba(245, 158, 11, 0.1)",
+                      borderColor: "rgba(245, 158, 11, 0.25)",
+                      color: "#fbbf24"
+                    }}
+                  >
+                    {activeQrModal.kelas}
+                  </span>
+                  <span 
+                    className="text-[9px] px-2.5 py-0.5 rounded-md font-sans font-bold uppercase tracking-wide border"
+                    style={{
+                      backgroundColor: "rgba(16, 185, 129, 0.1)",
+                      borderColor: "rgba(16, 185, 129, 0.25)",
+                      color: "#34d399"
+                    }}
+                  >
+                    SISWA AKTIF
+                  </span>
+                </div>
+
+                <div className="text-[10px] font-sans flex items-center justify-center gap-1 mt-1" style={{ color: "#94a3b8" }}>
+                  <span>NIS:</span>
+                  <span className="font-bold tracking-wider" style={{ color: "#e2e8f0" }}>{activeQrModal.nis}</span>
+                </div>
               </div>
 
-              <div className="text-[9px] text-slate-600 font-mono uppercase tracking-widest pt-2 border-t border-slate-900 w-full">
-                Scan Pada Terminal Booth Sekolah
+              {/* Footer text with Islamic star and scan instructions */}
+              <div 
+                className="text-[8px] font-sans uppercase tracking-widest pt-2.5 w-full flex items-center justify-center gap-1.5"
+                style={{
+                  borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+                  color: "#64748b"
+                }}
+              >
+                <span>✦</span>
+                <span>Scan Terminal Presensi Siswa</span>
+                <span>✦</span>
               </div>
             </div>            {/* Controls for card */}
             <div className="grid grid-cols-2 gap-3 mt-5">
@@ -1866,14 +2280,13 @@ export default function TeacherDashboard({
                 <span>CETAK SEKARANG</span>
               </button>
 
-              <a
-                href={`/api/siswa/${activeQrModal.id}/qr`}
-                download={`QR_Code_${activeQrModal.nama.replace(/\s+/g, "_")}.png`}
+              <button
+                onClick={handleDownloadCard}
                 className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-750 text-xs font-bold py-2.5 px-3 rounded-lg transition-all duration-155 flex items-center justify-center gap-1.5 text-center cursor-pointer"
               >
                 <FileDown className="h-3.5 w-3.5 text-emerald-400" />
                 <span>UNDUH IMAGE</span>
-              </a>
+              </button>
             </div>
 
           </div>

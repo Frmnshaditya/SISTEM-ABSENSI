@@ -183,6 +183,51 @@ export default function ScannerTab({ onOpenLogin, settings, recentScans, mapelLi
               <span className="text-slate-700">|</span>
               <span className="text-indigo-400 font-bold tracking-wide animate-pulse">LIVE SYNC</span>
             </div>
+
+            <div className="mt-4 flex flex-col gap-2.5 w-full text-left bg-slate-950/80 p-4 rounded-xl border border-slate-800/80">
+              <span className="text-[10px] uppercase tracking-widest text-indigo-400 font-mono font-bold block mb-1">JADWAL & BATAS ABSENSI SESI</span>
+              <div className="space-y-1.5 text-xs">
+                <div className="flex items-center justify-between text-[10px] pb-1 border-b border-slate-900 uppercase font-mono text-slate-500 font-bold tracking-wider">
+                  <span>Sesi / Mapel</span>
+                  <div className="flex gap-5 font-mono">
+                    <span className="w-10 text-right">Mulai</span>
+                    <span className="w-10 text-right">Batas</span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between text-[11px] py-0.5">
+                  <span className="text-slate-300 font-medium truncate max-w-[130px]">{settings.mapel1_judul || "Mapel Pertama"}</span>
+                  <div className="flex gap-5 font-mono text-[11px]">
+                    <span className="w-10 text-right text-sky-400">{settings.mapel1_mulai || "06:00"}</span>
+                    <b className="w-10 text-right text-emerald-400">{settings.mapel1_jam || "07:15"}</b>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between text-[11px] py-0.5 border-t border-slate-900/60 pt-1">
+                  <span className="text-slate-300 font-medium truncate max-w-[130px]">{settings.mapel2_judul || "Mapel Kedua"}</span>
+                  <div className="flex gap-5 font-mono text-[11px]">
+                    <span className="w-10 text-right text-sky-400">{settings.mapel2_mulai || "08:30"}</span>
+                    <b className="w-10 text-right text-emerald-400">{settings.mapel2_jam || "10:15"}</b>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between text-[11px] py-0.5 border-t border-slate-900/60 pt-1">
+                  <span className="text-slate-300 font-medium truncate max-w-[130px]">{settings.mapel3_judul || "Mapel Ketiga"}</span>
+                  <div className="flex gap-5 font-mono text-[11px]">
+                    <span className="w-10 text-right text-sky-400">{settings.mapel3_mulai || "11:30"}</span>
+                    <b className="w-10 text-right text-emerald-400">{settings.mapel3_jam || "13:15"}</b>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between text-[11px] py-0.5 border-t border-slate-900/60 pt-1">
+                  <span className="text-slate-300 font-medium truncate max-w-[130px]">{settings.mapel4_judul || "Mapel Keempat"}</span>
+                  <div className="flex gap-5 font-mono text-[11px]">
+                    <span className="w-10 text-right text-sky-400">{settings.mapel4_mulai || "13:45"}</span>
+                    <b className="w-10 text-right text-emerald-400">{settings.mapel4_jam || "14:10"}</b>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Active Subject Selector Card */}

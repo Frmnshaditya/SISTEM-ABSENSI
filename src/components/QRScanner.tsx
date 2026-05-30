@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 import { Camera, CameraOff, AlertTriangle, RefreshCw, QrCode, Sparkles } from "lucide-react";
 
@@ -19,8 +19,54 @@ export default function QRScanner({ onScanSuccess, onScanFailure }: QRScannerPro
   const [selectedSimSiswa, setSelectedSimSiswa] = useState<string>("");
   const [showSimPanel, setShowSimPanel] = useState<boolean>(false);
 
+  // States for autofocus target visual feedback on camera tap
+  const [focusRing, setFocusRing] = useState<{ x: number; y: number; show: boolean } | null>(null);
+
   const qrCodeInstanceRef = useRef<Html5Qrcode | null>(null);
   const scannerId = "qr-reader-container";
+
+  // Trigger focus constraints upon tapping the camera preview screen
+  const handleTapToFocus = async (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isScanning) return;
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    setFocusRing({ x, y, show: true });
+    
+    // Smoothly fade out focus target after 1.2s
+    setTimeout(() => {
+      setFocusRing(prev => prev && prev.x === x && prev.y === y ? { ...prev, show: false } : prev);
+    }, 1200);
+
+    // Apply focusing manually on the active track
+    try {
+      const videoElement = document.querySelector(`#${scannerId} video`) as HTMLVideoElement;
+      if (videoElement && videoElement.srcObject) {
+        const stream = videoElement.srcObject as MediaStream;
+        const track = stream.getVideoTracks()[0];
+        if (track) {
+          const capabilities = track.getCapabilities() as any;
+          
+          if (capabilities.focusMode) {
+            const preferredMode = capabilities.focusMode.includes("continuous") 
+              ? "continuous" 
+              : (capabilities.focusMode.includes("auto") ? "auto" : null);
+              
+            if (preferredMode) {
+              await track.applyConstraints({
+                advanced: [{ focusMode: preferredMode }]
+              } as any);
+              console.log("Tap to focus success on active camera track. Mode applied:", preferredMode);
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("Could not applying tap to focus constraints:", err);
+    }
+  };
 
   // Fetch registered students to feed the instant emulator fallback list
   useEffect(() => {
@@ -111,9 +157,21 @@ export default function QRScanner({ onScanSuccess, onScanFailure }: QRScannerPro
           fps: 12,
           qrbox: (width, height) => {
             // Responsive box sizing
-            const side = Math.min(width, height) * 0.65;
+            const side = Math.min(width, height) * 0.85;
             return { width: Math.max(side, 180), height: Math.max(side, 180) };
           },
+          // Proactively request continuous autofocus focusMode constraint from browser at startup
+          videoConstraints: {
+            deviceId: { exact: cameraId },
+            // @ts-ignore
+            focusMode: "continuous",
+            advanced: [
+              {
+                // @ts-ignore
+                focusMode: "continuous"
+              }
+            ]
+          }
         },
         (decodedText) => {
           onScanSuccess(decodedText);
@@ -123,6 +181,40 @@ export default function QRScanner({ onScanSuccess, onScanFailure }: QRScannerPro
           onScanFailure(errorMessage);
         }
       );
+
+      // Explicitly trigger active focus constraint application once camera loads successfully
+      setTimeout(async () => {
+        try {
+          const videoElement = document.querySelector(`#${scannerId} video`) as HTMLVideoElement;
+          if (videoElement && videoElement.srcObject) {
+            const stream = videoElement.srcObject as MediaStream;
+            const track = stream.getVideoTracks()[0];
+            if (track) {
+              const capabilities = track.getCapabilities() as any;
+              const constraints: any = {};
+              
+              if (capabilities.focusMode && capabilities.focusMode.includes("continuous")) {
+                constraints.focusMode = "continuous";
+              } else if (capabilities.focusMode && capabilities.focusMode.includes("auto")) {
+                constraints.focusMode = "auto";
+              }
+
+              if (capabilities.exposureMode && capabilities.exposureMode.includes("continuous")) {
+                constraints.exposureMode = "continuous";
+              }
+
+              if (Object.keys(constraints).length > 0) {
+                await track.applyConstraints({
+                  advanced: [constraints]
+                } as any);
+                console.log("Immediately applied continuous autofocus capabilities:", constraints);
+              }
+            }
+          }
+        } catch (focusInitErr) {
+          console.warn("Autofocus constraint initialization skipped:", focusInitErr);
+        }
+      }, 750);
     } catch (err: any) {
       console.error("Failed to start scanning on selected camera:", err);
       setIsScanning(false);
@@ -151,7 +243,7 @@ export default function QRScanner({ onScanSuccess, onScanFailure }: QRScannerPro
   };
 
   return (
-    <div id="qr-scanner-element-card" className="relative flex flex-col items-center justify-center w-full max-w-sm mx-auto overflow-hidden bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-5">
+    <div id="qr-scanner-element-card" className="relative flex flex-col items-center justify-center w-full max-w-lg md:max-w-xl mx-auto overflow-hidden bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-5">
       
       {/* Absolute top badge indicators */}
       <div className="absolute top-5 left-5 z-10 flex items-center gap-2">
@@ -176,15 +268,19 @@ export default function QRScanner({ onScanSuccess, onScanFailure }: QRScannerPro
         </button>
       )}
 
-      {/* Main video scan portal content */}
-      <div className="relative w-full aspect-square bg-slate-950 rounded-xl flex items-center justify-center overflow-hidden border border-slate-800/80 mt-10">
+      {/* Main video scan portal content with click-to-focus capabilities */}
+      <div 
+        onClick={handleTapToFocus}
+        className="relative w-full aspect-square bg-slate-950 rounded-xl flex items-center justify-center overflow-hidden border border-slate-800/80 mt-10 cursor-pointer group"
+        title="Ketuk untuk memicu fokus manual"
+      >
         <div id={scannerId} className="w-full h-full object-cover [&>video]:object-cover" />
 
         {/* Fancy Overlay Guidelines */}
         {isScanning && (
           <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
             {/* Dark mask overlays for standard center box framing visual */}
-            <div className="absolute inset-0 border-[32px] sm:border-[48px] border-slate-950/60 flex items-center justify-center">
+            <div className="absolute inset-0 border-[16px] sm:border-[24px] border-slate-950/40 flex items-center justify-center">
               
               {/* Dynamic scan corners */}
               <div className="absolute inset-0 w-full h-full">
@@ -201,6 +297,28 @@ export default function QRScanner({ onScanSuccess, onScanFailure }: QRScannerPro
                 <div className="absolute left-0 right-0 w-full h-[2px] bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,1)] top-1/2 -translate-y-1/2 opacity-50" />
               </div>
 
+            </div>
+          </div>
+        )}
+
+        {/* Dynamic Focus Target Sight on tap */}
+        {isScanning && focusRing && focusRing.show && (
+          <div 
+            className="absolute z-30 pointer-events-none"
+            style={{
+              left: `${focusRing.x}px`,
+              top: `${focusRing.y}px`,
+              transform: "translate(-50%, -50%)"
+            }}
+          >
+            {/* Pulsing yellow focusing target sight */}
+            <div className="relative flex items-center justify-center">
+              <span className="absolute inline-flex h-12 w-12 rounded-full border border-yellow-400 opacity-75 animate-ping"></span>
+              <span className="relative inline-flex rounded-full h-8 w-8 border border-yellow-400 bg-yellow-400/20"></span>
+              <span className="absolute w-2.5 h-[1.5px] bg-yellow-400 left-[-4px]"></span>
+              <span className="absolute w-2.5 h-[1.5px] bg-yellow-400 right-[-4px]"></span>
+              <span className="absolute h-2.5 w-[1.5px] bg-yellow-400 top-[-4px]"></span>
+              <span className="absolute h-2.5 w-[1.5px] bg-yellow-400 bottom-[-4px]"></span>
             </div>
           </div>
         )}
@@ -267,8 +385,11 @@ export default function QRScanner({ onScanSuccess, onScanFailure }: QRScannerPro
         )}
       </div>
 
-      <div className="w-full mt-4 text-center space-y-3.5">
+      <div className="w-full mt-4 text-center space-y-3">
         <p className="text-slate-400 text-xs">Posisikan kode QR Siswa tepat di tengah bingkai pendeteksian</p>
+        <p className="text-[11px] text-slate-500 font-medium px-4">
+          💡 Kamera otomatis mendeteksi fokus secara kontinu. Anda juga bisa mengetuk area kamera untuk mengkalibrasi/memfokuskan ulang lensa secara instan.
+        </p>
         
         {/* Instant test selector if they want simple click simulation even when camera works */}
         <div className="pt-2 border-t border-slate-850/50">

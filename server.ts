@@ -32,6 +32,7 @@ interface Absensi {
   jam: string;     // HH:MM:SS
   status: "Hadir" | "Terlambat";
   mapel?: string;   // Mata Pelajaran
+  sesi?: string;    // Sesi Mapel ("1" | "2" | "3" | "4")
 }
 
 interface Mapel {
@@ -48,6 +49,18 @@ interface Database {
   pengaturan: {
     jamMasuk: string; // "HH:MM", e.g. "07:15"
     namaSekolah: string;
+    mapel1_judul?: string;
+    mapel1_mulai?: string;
+    mapel1_jam?: string;
+    mapel2_judul?: string;
+    mapel2_mulai?: string;
+    mapel2_jam?: string;
+    mapel3_judul?: string;
+    mapel3_mulai?: string;
+    mapel3_jam?: string;
+    mapel4_judul?: string;
+    mapel4_mulai?: string;
+    mapel4_jam?: string;
   };
 }
 
@@ -102,7 +115,19 @@ const DEFAULT_DATABASE: Database = {
   ],
   pengaturan: {
     jamMasuk: "07:15",
-    namaSekolah: "SMA IT CORDOVA 174"
+    namaSekolah: "SMA IT CORDOVA 174",
+    mapel1_judul: "Mapel Pertama",
+    mapel1_mulai: "06:00",
+    mapel1_jam: "07:15",
+    mapel2_judul: "Mapel Kedua",
+    mapel2_mulai: "08:30",
+    mapel2_jam: "10:15",
+    mapel3_judul: "Mapel Ketiga",
+    mapel3_mulai: "11:30",
+    mapel3_jam: "13:15",
+    mapel4_judul: "Mapel Keempat",
+    mapel4_mulai: "13:45",
+    mapel4_jam: "14:10"
   }
 };
 
@@ -115,11 +140,11 @@ function readDB(): Database {
       // Inject some initial historical scans for "Today" so dashboard doesn't start completely barren
       const today = new Date().toISOString().split("T")[0];
       initialDb.absensi = [
-        { id: "abs_1", siswaId: "sis_1", tanggal: today, jam: "07:02:15", status: "Hadir" },
-        { id: "abs_2", siswaId: "sis_2", tanggal: today, jam: "07:05:43", status: "Hadir" },
-        { id: "abs_3", siswaId: "sis_5", tanggal: today, jam: "07:23:12", status: "Terlambat" },
-        { id: "abs_4", siswaId: "sis_6", tanggal: today, jam: "07:35:00", status: "Terlambat" },
-        { id: "abs_5", siswaId: "sis_9", tanggal: today, jam: "06:58:32", status: "Hadir" },
+        { id: "abs_1", siswaId: "sis_1", tanggal: today, jam: "07:02:15", status: "Hadir", sesi: "1" },
+        { id: "abs_2", siswaId: "sis_2", tanggal: today, jam: "07:05:43", status: "Hadir", sesi: "1" },
+        { id: "abs_3", siswaId: "sis_5", tanggal: today, jam: "07:23:12", status: "Terlambat", sesi: "1" },
+        { id: "abs_4", siswaId: "sis_6", tanggal: today, jam: "07:35:00", status: "Terlambat", sesi: "1" },
+        { id: "abs_5", siswaId: "sis_9", tanggal: today, jam: "06:58:32", status: "Hadir", sesi: "1" },
       ];
       fs.writeFileSync(DB_PATH, JSON.stringify(initialDb, null, 2), "utf-8");
       return initialDb;
@@ -130,6 +155,27 @@ function readDB(): Database {
       const defaultClasses = ["X-MIPA-1", "X-MIPA-2", "X-IPS-1", "X-IPS-2", "XI-MIPA-1", "XI-IPS-1", "XII-IPA-1", "XII-IPA-2"];
       const existingClasses = Array.from(new Set(db.siswa.map(s => s.kelas))).filter(Boolean);
       db.kelas = Array.from(new Set([...defaultClasses, ...existingClasses])).sort();
+      fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), "utf-8");
+    }
+    if (!db.pengaturan.mapel1_judul) {
+      db.pengaturan.mapel1_judul = "Mapel Pertama";
+      db.pengaturan.mapel1_mulai = "06:00";
+      db.pengaturan.mapel1_jam = "07:15";
+      db.pengaturan.mapel2_judul = "Mapel Kedua";
+      db.pengaturan.mapel2_mulai = "08:30";
+      db.pengaturan.mapel2_jam = "10:15";
+      db.pengaturan.mapel3_judul = "Mapel Ketiga";
+      db.pengaturan.mapel3_mulai = "11:30";
+      db.pengaturan.mapel3_jam = "13:15";
+      db.pengaturan.mapel4_judul = "Mapel Keempat";
+      db.pengaturan.mapel4_mulai = "13:45";
+      db.pengaturan.mapel4_jam = "14:10";
+      fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), "utf-8");
+    } else if (!db.pengaturan.mapel1_mulai) {
+      db.pengaturan.mapel1_mulai = "06:00";
+      db.pengaturan.mapel2_mulai = "08:30";
+      db.pengaturan.mapel3_mulai = "11:30";
+      db.pengaturan.mapel4_mulai = "13:45";
       fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), "utf-8");
     }
     if (!db.mapel) {
@@ -247,12 +293,42 @@ async function startServer() {
 
   // API Route: Update Settings (Pengaturan)
   app.post("/api/settings", (req, res) => {
-    const { jamMasuk, namaSekolah } = req.body;
+    const {
+      jamMasuk,
+      namaSekolah,
+      mapel1_judul,
+      mapel1_mulai,
+      mapel1_jam,
+      mapel2_judul,
+      mapel2_mulai,
+      mapel2_jam,
+      mapel3_judul,
+      mapel3_mulai,
+      mapel3_jam,
+      mapel4_judul,
+      mapel4_mulai,
+      mapel4_jam,
+    } = req.body;
     if (!jamMasuk || !namaSekolah) {
       return res.status(400).json({ success: false, message: "Jam masuk dan nama sekolah wajib diisi" });
     }
     const db = readDB();
-    db.pengaturan = { jamMasuk, namaSekolah };
+    db.pengaturan = {
+      jamMasuk,
+      namaSekolah,
+      mapel1_judul: mapel1_judul || db.pengaturan.mapel1_judul || "Mapel Pertama",
+      mapel1_mulai: mapel1_mulai || db.pengaturan.mapel1_mulai || "06:00",
+      mapel1_jam: mapel1_jam || db.pengaturan.mapel1_jam || "07:15",
+      mapel2_judul: mapel2_judul || db.pengaturan.mapel2_judul || "Mapel Kedua",
+      mapel2_mulai: mapel2_mulai || db.pengaturan.mapel2_mulai || "08:30",
+      mapel2_jam: mapel2_jam || db.pengaturan.mapel2_jam || "10:15",
+      mapel3_judul: mapel3_judul || db.pengaturan.mapel3_judul || "Mapel Ketiga",
+      mapel3_mulai: mapel3_mulai || db.pengaturan.mapel3_mulai || "11:30",
+      mapel3_jam: mapel3_jam || db.pengaturan.mapel3_jam || "13:15",
+      mapel4_judul: mapel4_judul || db.pengaturan.mapel4_judul || "Mapel Keempat",
+      mapel4_mulai: mapel4_mulai || db.pengaturan.mapel4_mulai || "13:45",
+      mapel4_jam: mapel4_jam || db.pengaturan.mapel4_jam || "14:10",
+    };
     writeDB(db);
     res.json({ success: true, settings: db.pengaturan });
   });
@@ -571,7 +647,7 @@ async function startServer() {
 
   // API Route: Validate & Scan QR Code
   app.post("/api/scan", (req, res) => {
-    const { qrData, forcedTime, mapel } = req.body;
+    const { qrData, forcedTime, mapel, sesi } = req.body;
     if (!qrData) {
       return res.status(400).json({ success: false, message: "Data QR-Code kosong!" });
     }
@@ -619,25 +695,88 @@ async function startServer() {
       jamStr = forcedTime; // format "HH:MM:SS"
     }
 
-    // 3. Anti-double scan (cannot scan twice in the exact same day for the exact same subject)
+    // Determine active Sesi
+    let activeSesi = sesi;
+    
+    const parseTimeToMinutes = (timeStr: string) => {
+      const parts = timeStr.split(":");
+      return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+    };
+
+    const scanTotalMinutes = (() => {
+      const scanParts = jamStr.split(":");
+      return parseInt(scanParts[0]) * 60 + parseInt(scanParts[1]);
+    })();
+
+    const m1Mulai = parseTimeToMinutes(db.pengaturan.mapel1_mulai || "06:00");
+    const m2Mulai = parseTimeToMinutes(db.pengaturan.mapel2_mulai || "08:30");
+    const m3Mulai = parseTimeToMinutes(db.pengaturan.mapel3_mulai || "11:30");
+    const m4Mulai = parseTimeToMinutes(db.pengaturan.mapel4_mulai || "13:45");
+
+    if (!activeSesi) {
+      if (scanTotalMinutes >= m4Mulai) {
+        activeSesi = "4";
+      } else if (scanTotalMinutes >= m3Mulai) {
+        activeSesi = "3";
+      } else if (scanTotalMinutes >= m2Mulai) {
+        activeSesi = "2";
+      } else {
+        activeSesi = "1";
+      }
+    }
+
+    // Determine deadline and session title
+    let limitTime = db.pengaturan.jamMasuk || "07:15";
+    let sesiTitle = "Mapel Pertama";
+    let activeMulaiTime = db.pengaturan.mapel1_mulai || "06:00";
+
+    if (activeSesi === "1") {
+      limitTime = db.pengaturan.mapel1_jam || "07:15";
+      sesiTitle = db.pengaturan.mapel1_judul || "Mapel Pertama";
+      activeMulaiTime = db.pengaturan.mapel1_mulai || "06:00";
+    } else if (activeSesi === "2") {
+      limitTime = db.pengaturan.mapel2_jam || "10:15";
+      sesiTitle = db.pengaturan.mapel2_judul || "Mapel Kedua";
+      activeMulaiTime = db.pengaturan.mapel2_mulai || "08:30";
+    } else if (activeSesi === "3") {
+      limitTime = db.pengaturan.mapel3_jam || "13:15";
+      sesiTitle = db.pengaturan.mapel3_judul || "Mapel Ketiga";
+      activeMulaiTime = db.pengaturan.mapel3_mulai || "11:30";
+    } else if (activeSesi === "4") {
+      limitTime = db.pengaturan.mapel4_jam || "14:10";
+      sesiTitle = db.pengaturan.mapel4_judul || "Mapel Keempat";
+      activeMulaiTime = db.pengaturan.mapel4_mulai || "13:45";
+    }
+
+    // Check if scan time has not started yet (preventing scanning before allowed start time)
+    const activeMulaiMinutes = parseTimeToMinutes(activeMulaiTime);
+    if (scanTotalMinutes < activeMulaiMinutes) {
+      return res.json({
+        success: false,
+        message: `Scan ditolak! Presensi untuk ${sesiTitle} baru dibuka mulai pukul ${activeMulaiTime}.`,
+      });
+    }
+
+    // 3. Anti-double scan (cannot scan twice in the exact same day for the exact same session or active subject)
     const alreadyScanned = db.absensi.some(
-      (a) => a.siswaId === student.id && a.tanggal === todayStr && (a.mapel || "Matematika") === activeMapel
+      (a) => a.siswaId === student.id && a.tanggal === todayStr && (a.mapel?.toLowerCase() === activeMapel.toLowerCase() || a.sesi === activeSesi)
     );
 
     if (alreadyScanned) {
       const pastLog = db.absensi.find(
-        (a) => a.siswaId === student.id && a.tanggal === todayStr && (a.mapel || "Matematika") === activeMapel
+        (a) => a.siswaId === student.id && a.tanggal === todayStr && (a.mapel?.toLowerCase() === activeMapel.toLowerCase() || a.sesi === activeSesi)
       );
+      const isSesiDup = pastLog?.sesi === activeSesi;
       return res.json({
         success: false,
-        message: `${student.nama} sudah absensi untuk mapel ${activeMapel} hari ini pada jam ${pastLog?.jam}. Mencegah double scan!`,
+        message: `${student.nama} sudah absensi untuk ${isSesiDup ? sesiTitle : 'mapel ' + activeMapel} hari ini pada jam ${pastLog?.jam}. Mencegah double scan!`,
         student,
       });
     }
 
     // 4. Determine Status (Hadir / Terlambat)
-    // jamMasuk is formatted as "HH:MM" -> e.g. "07:15"
-    const limitParts = db.pengaturan.jamMasuk.split(":");
+    // limitTime is formatted as "HH:MM" -> e.g. "07:15"
+    const limitParts = limitTime.split(":");
     const limitHour = parseInt(limitParts[0]);
     const limitMin = parseInt(limitParts[1]);
 
@@ -658,6 +797,7 @@ async function startServer() {
       jam: jamStr,
       status: status,
       mapel: activeMapel,
+      sesi: activeSesi,
     };
 
     db.absensi.push(newLog);

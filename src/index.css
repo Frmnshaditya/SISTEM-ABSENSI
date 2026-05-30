@@ -168,3 +168,43 @@
 .animate-spin-slow {
   animation: spin-slow 12s linear infinite;
 }
+
+/* Premium ID Card Print Style overrides */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+  
+  /* Hide all elements on the screen except the modal's printing area container */
+  body * {
+    visibility: hidden !important;
+  }
+
+  #student-id-card-print-area,
+  #student-id-card-print-area * {
+    visibility: visible !important;
+  }
+
+  /* Target the card container to place it cleanly at the top of the sheet */
+  #student-id-card-print-area {
+    visibility: visible !important;
+    position: absolute !important;
+    left: 20px !important;
+    top: 20px !important;
+    width: 320px !important;
+    height: 480px !important;
+    border: 2px solid #b45309 !important; /* Gold border boundary */
+    background: linear-gradient(135deg, #022c22, #020617, #022c22) !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    border-radius: 16px !important;
+    box-shadow: none !important;
+    padding: 24px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+}
+
