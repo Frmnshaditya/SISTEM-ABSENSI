@@ -1,0 +1,13 @@
+# Netlify Configuration File
+[build]
+  # Commands to run to build your React static frontend
+  command = "npm run build && node generate-redirects.js"
+  
+  # The directory that Netlify will serve (Vite outputs to 'dist')
+  publish = "dist"
+
+[build.environment]
+  # Set Node.js version for modern ES Module build support
+  NODE_VERSION = "20"
+
+# Redirect rules are handled dynamically by our generated _redirects file in the publish directory

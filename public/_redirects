@@ -1,0 +1,8 @@
+# Netlify Redirects File
+# Template for proxying frontend API requests to your Railway backend
+
+# 1. API proxying rules (This placeholder will be dynamically replaced by our script at build time)
+/api/*  https://nama-app-anda.up.railway.app/api/:splat  200
+
+# 2. Support SPA routing (React Router fallback to prevent 404 on refresh)
+/*      /index.html                                     200
